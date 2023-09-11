@@ -22,4 +22,7 @@ commands:
     description: Heals you
   pl:
     description: Shows your party list
+  staffchat:
+    description: Send a message to staff chat
+    aliases: [sc]
 

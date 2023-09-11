@@ -1,10 +1,12 @@
 package dev.pillage.quests.Commands;
 
+import dev.pillage.quests.Enums.PartyRoles;
 import dev.pillage.quests.Utils.TextUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class Party implements CommandExecutor {
@@ -29,6 +31,39 @@ public class Party implements CommandExecutor {
                 party.handleAccept(Bukkit.getPlayer(args[1]), (org.bukkit.entity.Player) sender);
                 return true;
             }
+            if (args[0].equalsIgnoreCase("invite") && args.length == 1) {
+                sender.sendMessage(
+                        TextUtils.border + TextUtils.color("\n&cPlease specify a user") + TextUtils.border
+                );
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("leave")) {
+                if (party.isInParty((Player) sender)) {
+                    if (party.partyRole((Player) sender).equals(PartyRoles.LEADER)) {
+//                        party.disbandParty((Player) sender);
+                        return true;
+                    }
+                    party.removeFromParty((Player) sender);
+                }
+            }
+            if (args[0].equalsIgnoreCase("invite") && Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[1]))) {
+                if (party.isInParty(Bukkit.getPlayer(args[1]))) {
+                    if (party.partyRole((Player) sender).equals(PartyRoles.MEMBER)) {
+                        sender.sendMessage(
+                                TextUtils.border + TextUtils.color("\n&cYou are not the party leader!") + TextUtils.border
+                        );
+                        return true;
+                    }
+                    if (party.partyID((Player) sender) == party.partyID(Bukkit.getPlayer(args[1]))) {
+                        sender.sendMessage(
+                                TextUtils.border + TextUtils.color("\n&cThat player is already in your party!") + TextUtils.border
+                        );
+                        return true;
+                    }
+                }
+                party.inviteUser((org.bukkit.entity.Player) sender, Bukkit.getPlayer(args[1]));
+                return true;
+            }
             if (args[0].equalsIgnoreCase("list")) {
                 party.listPlayers((org.bukkit.entity.Player) sender);
                 return true;
@@ -40,6 +75,24 @@ public class Party implements CommandExecutor {
                 return true;
             }
             if (Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[0]))) {
+                if (party.isInParty((Player) sender)) {
+                    if (party.partyRole((Player) sender).equals(PartyRoles.MEMBER)) {
+                        sender.sendMessage(
+                                TextUtils.border + TextUtils.color("\n&cYou are not the party leader!") + TextUtils.border
+                        );
+                        return true;
+                    }
+                }
+                if (party.partyID((Player) sender) == -1 && party.partyID(Bukkit.getPlayer(args[0])) == -1) {
+                    party.inviteUser((org.bukkit.entity.Player) sender, Bukkit.getPlayer(args[0]));
+                    return true;
+                }
+                if (party.partyID((Player) sender) == party.partyID(Bukkit.getPlayer(args[0]))) {
+                    sender.sendMessage(
+                            TextUtils.border + TextUtils.color("\n&cThat player is already in your party!") + TextUtils.border
+                    );
+                    return true;
+                }
                 sender.sendMessage(
                         TextUtils.border + TextUtils.color("\n&aSent a party request to ") + args[0] + TextUtils.border
                 );
