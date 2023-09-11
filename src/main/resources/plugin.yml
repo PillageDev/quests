@@ -1,0 +1,25 @@
+name: Quests
+version: '${project.version}'
+main: dev.pillage.quests.Main
+api-version: '1.19'
+depend:
+  - LuckPerms
+  - PlaceholderAPI
+commands:
+  chat:
+    description: Chat command
+    aliases: [c]
+  gamemode:
+    description: Gamemode command
+    aliases: [gm]
+  party:
+    description: Party command
+    aliases: [p]
+  tp:
+    description: Teleport command
+    aliases: [teleport]
+  heal:
+    description: Heals you
+  pl:
+    description: Shows your party list
+
