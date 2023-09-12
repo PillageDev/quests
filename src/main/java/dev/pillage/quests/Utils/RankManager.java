@@ -4,6 +4,7 @@ import dev.pillage.quests.Enums.PlayerRank;
 
 import net.luckperms.api.model.user.User;
 
+import net.luckperms.api.node.Node;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -41,6 +42,20 @@ public class RankManager {
         UUID uuid = player.getUniqueId();
         User user = api.getUserManager().getUser(uuid);
         return user.getPrimaryGroup().equals(rank.toString().toLowerCase());
+    }
+
+    public static void addPermission(final Player player, final String node) {
+        UUID uuid = player.getUniqueId();
+        User user = api.getUserManager().getUser(uuid);
+        Node permission = Node.builder(node).build();
+        user.data().add(permission);
+    }
+
+    public static void removePermission(final Player player, final String node) {
+        UUID uuid = player.getUniqueId();
+        User user = api.getUserManager().getUser(uuid);
+        Node permission = Node.builder(node).build();
+        user.data().remove(permission);
     }
 
 }

@@ -24,6 +24,7 @@ public final class Main extends JavaPlugin {
         getCommand("tp").setExecutor(new TP());
         getCommand("heal").setExecutor(new Heal());
         getCommand("pl").setExecutor(new PL());
+        getCommand("staffchat").setExecutor(new StaffChat());
     }
 
     @Override
