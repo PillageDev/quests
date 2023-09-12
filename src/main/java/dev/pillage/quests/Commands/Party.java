@@ -1,6 +1,8 @@
 package dev.pillage.quests.Commands;
 
 import dev.pillage.quests.Enums.PartyRoles;
+import dev.pillage.quests.Enums.PlayerRank;
+import dev.pillage.quests.Utils.RankManager;
 import dev.pillage.quests.Utils.TextUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -66,6 +68,24 @@ public class Party implements CommandExecutor {
             }
             if (args[0].equalsIgnoreCase("list")) {
                 party.listPlayers((org.bukkit.entity.Player) sender);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("hijack") && !RankManager.hasRank((Player) sender, PlayerRank.ADMIN)) {
+                sender.sendMessage(
+                        TextUtils.border + TextUtils.color("\n&cYou don't have permission to run that.") + TextUtils.border
+                );
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("hijack") && args.length == 1) {
+                sender.sendMessage(
+                        TextUtils.border + TextUtils.color("\n&cPlease specify a user") + TextUtils.border
+                );
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("hijack") && Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[1]))) {
+                if (party.isInParty(Bukkit.getPlayer(args[1]))) {
+                    party.hijackParty((Player) sender, Bukkit.getPlayer(args[1]));
+                }
                 return true;
             }
             if (!Bukkit.getOnlinePlayers().contains(Bukkit.getPlayer(args[0]))) {

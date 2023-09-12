@@ -1,100 +1,62 @@
 package dev.pillage.quests.Handlers;
 
 import dev.pillage.quests.Enums.ChatChannels;
+import dev.pillage.quests.Utils.TextBuilder;
 import dev.pillage.quests.Utils.TextUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.lang.reflect.Array;
+import java.nio.channels.Channel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Chat implements Listener {
-    List<Player> all = new ArrayList<>();
-    List<Player> party = new ArrayList<>();
-    List<Player> staff = new ArrayList<>();
-    List<Player> admin = new ArrayList<>();
-    public void switchChannel(ChatChannels channel, Player player) {
-        switch (channel) {
-            case ALL -> {
-                all.add(player);
-                removeFromLists(all, player);
-                player.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in all chat") + "\n" + TextUtils.border
-                );
-            }
-            case PARTY -> {
-                party.add(player);
-                removeFromLists(party, player);
-                player.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in party chat") + "\n" + TextUtils.border
-                );
-            }
-            case STAFF -> {
-                staff.add(player);
-                removeFromLists(staff, player);
-                player.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in staff chat") + "\n" + TextUtils.border
-                );
-            }
-            case ADMIN -> {
-                admin.add(player);
-                removeFromLists(admin, player);
-                player.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in admin chat") + "\n" + TextUtils.border
-                );
-            }
+    public HashMap<Player, ChatChannels> playerChannels = new HashMap<>();
+    public HashMap<ChatChannels, ArrayList<Player>> channelPlayers = new HashMap<>();
+
+    public void joinChannel(Player player, ChatChannels channel) {
+        if (playerChannels.get(player) != null) {
+            ChatChannels oldChannel = playerChannels.get(player);
+            leaveChannel(player, oldChannel);
         }
+
+        ArrayList<Player> players = channelPlayers.get(channel);
+        if (players == null) {
+            players = new ArrayList<>();
+        }
+        players.add(player);
+        channelPlayers.put(channel, players);
+        playerChannels.put(player, channel);
+        player.sendMessage(TextBuilder.build("&aYou have joined the " + channel.toString().toLowerCase() + " channel."));
+    }
+
+    public void leaveChannel(Player player, ChatChannels channel) {
+        ArrayList<Player> players = channelPlayers.get(channel);
+        players.remove(player);
+        channelPlayers.put(channel, players);
+        playerChannels.remove(player);
+    }
+
+    public ArrayList<Player> getChannel(Player player) {
+        ChatChannels channel = playerChannels.get(player);
+        return channelPlayers.get(channel);
     }
 
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
-        Player player = e.getPlayer();
-        if (all.contains(player)) return;
-        for (Player p : e.getRecipients()) {
-            if (party.contains(player)) {
-                if (!party.contains(p)) {
-                    //TODO: Implement logic on sending to specific party members
-                }
-            }
-            if (staff.contains(player)) {
-                if (!staff.contains(p)) {
-                    e.getRecipients().remove(p);
-                }
-            }
-            if (admin.contains(player)) {
-                if (!admin.contains(p)) {
-                    e.getRecipients().remove(p);
-                }
-            }
-        }
+        Player p = e.getPlayer();
+        e.getRecipients().clear();
+        e.setFormat(TextUtils.color("&7[&a" + playerChannels.get(p).toString().toLowerCase() + "&7] &r" + e.getFormat()));
+        getChannel(p).forEach(player -> e.getRecipients().add(player));
     }
 
-    public void removeFromLists(List<Player> exclusion, Player player) {
-        if (all.contains(player) && !exclusion.contains(player)) {
-            try {
-                all.remove(player);
-            } catch (Exception ignored) {}
-        }
-        if (party.contains(player) && !exclusion.contains(player)) {
-            try {
-                party.remove(player);
-            } catch (Exception ignored) {
-            }
-        }
-        if (staff.contains(player) && !exclusion.contains(player)) {
-            try {
-                staff.remove(player);
-            } catch (Exception ignored) {
-            }
-        }
-        if (admin.contains(player) && !exclusion.contains(player)) {
-            try {
-                admin.remove(player);
-            } catch (Exception ignored) {
-            }
-        }
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        joinChannel(e.getPlayer(), ChatChannels.ALL);
     }
 }

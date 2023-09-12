@@ -48,8 +48,9 @@ public class Party {
             if (existingParties.containsKey(requester.getUniqueId())) {
                 existingParties.put(target.getUniqueId(), PartyRoles.MEMBER);
                 parties.put(i, existingParties);
+                String joinMessage = PlaceholderAPI.setPlaceholders(target, TextUtils.color("&a" + target.getName() + " &ahas joined your party"));
                 requester.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&a" + target.getName() + " &ahas joined your party") + "\n" + TextUtils.border
+                        TextUtils.border + "\n" + PlaceholderAPI.setPlaceholders(target, TextUtils.color("&a" + target.getName() + " &ahas joined your party")) + "\n" + TextUtils.border
                 );
                 if (parties.get(i).size() > 2) {
                     StringBuilder memberList = new StringBuilder();
@@ -165,6 +166,63 @@ public class Party {
             }
         }
         return -1;
+    }
+
+    public void hijackParty(Player target, Player executor) {
+        for (int i : parties.keySet()) {
+            Map<UUID, PartyRoles> existingParties = parties.get(i);
+            if (existingParties.containsKey(target.getUniqueId())) {
+                existingParties.put(executor.getUniqueId(), PartyRoles.LEADER);
+                existingParties.put(target.getUniqueId(), PartyRoles.MEMBER);
+                parties.put(i, existingParties);
+                executor.sendMessage(
+                        TextUtils.border + "\n" + TextUtils.color("&aYou have hijacked " + target.getName() + "'s &aparty") + "\n" + TextUtils.border
+                );
+                target.sendMessage(
+                        TextUtils.border + "\n" + TextUtils.color("&cYou have been hijacked from your party by " + executor.getName()) + "\n" + TextUtils.border
+                );
+                return;
+            }
+        }
+    }
+
+    public List<Player> partyList(Player member) {
+        for (int i : parties.keySet()) {
+            Map<UUID, PartyRoles> existingParties = parties.get(i);
+            if (existingParties.containsKey(member.getUniqueId())) {
+                List<Player> partyList = new ArrayList<>();
+                for (UUID uuid : parties.get(i).keySet()) {
+                    partyList.add(Bukkit.getPlayer(uuid));
+                }
+                return partyList;
+            }
+        }
+        return null;
+    }
+
+    public void joinParty(Player target, Player executor, boolean silent) {
+        for (int i : parties.keySet()) {
+            Map<UUID, PartyRoles> existingParties = parties.get(i);
+            if (existingParties.containsKey(target.getUniqueId())) {
+                existingParties.put(target.getUniqueId(), PartyRoles.MEMBER);
+                parties.put(i, existingParties);
+                executor.sendMessage(
+                        TextUtils.border + "\n" + TextUtils.color("&aYou have joined " + target.getName() + "'s &aparty") + "\n" + TextUtils.border
+                );
+                if (!silent) {
+                    target.sendMessage(
+                            TextUtils.border + "\n" + TextUtils.color("&a" + executor.getName() + " &ahas joined your party") + "\n" + TextUtils.border
+                    );
+                } else {
+                   return;
+                }
+                return;
+            } else {
+                executor.sendMessage(
+                        TextUtils.border + "\n" + TextUtils.color("&cLooks like that user isn't in a party!") + "\n" + TextUtils.border
+                );
+            }
+        }
     }
 }
 

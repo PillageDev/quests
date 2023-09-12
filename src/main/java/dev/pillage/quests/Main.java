@@ -1,9 +1,7 @@
 package dev.pillage.quests;
 
-import dev.pillage.quests.Commands.Gamemode;
-import dev.pillage.quests.Commands.Heal;
-import dev.pillage.quests.Commands.PL;
-import dev.pillage.quests.Commands.TP;
+import dev.pillage.quests.Commands.*;
+import dev.pillage.quests.Events.ChatEvent;
 import dev.pillage.quests.Handlers.Chat;
 import dev.pillage.quests.Utils.FlagHandler;
 import dev.pillage.quests.Utils.RankManager;
@@ -20,6 +18,7 @@ public final class Main extends JavaPlugin {
         getCommand("gamemode").setExecutor(new Gamemode());
         getServer().getPluginManager().registerEvents(new Chat(), this);
         getServer().getPluginManager().registerEvents(new FlagHandler(), this);
+        getServer().getPluginManager().registerEvents(new ChatEvent(), this);
         getCommand("chat").setExecutor(new dev.pillage.quests.Commands.Chat());
         getCommand("party").setExecutor(new dev.pillage.quests.Commands.Party());
         getCommand("tp").setExecutor(new TP());

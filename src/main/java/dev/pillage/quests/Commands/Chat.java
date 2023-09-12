@@ -1,6 +1,9 @@
 package dev.pillage.quests.Commands;
 
 import dev.pillage.quests.Enums.ChatChannels;
+import dev.pillage.quests.Enums.PlayerRank;
+import dev.pillage.quests.Utils.RankManager;
+import dev.pillage.quests.Utils.TextBuilder;
 import dev.pillage.quests.Utils.TextUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,38 +17,48 @@ public class Chat implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
         if (cmd.getName().equalsIgnoreCase("chat")) {
+            dev.pillage.quests.Handlers.Chat chat = new dev.pillage.quests.Handlers.Chat();
             if (args.length == 0) {
                 sender.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&e/chat a - All Chat\n&e/chat p - Party Chat") + "\n" + TextUtils.border
+                        TextUtils.border + TextUtils.color("\n&e/chat <channel> - Switch to a chat channel\n&e/chat list - List all chat channels\n") + TextUtils.border
                 );
                 return true;
             }
-            if (args[0].equalsIgnoreCase("a")) {
+            if (args[0].equalsIgnoreCase("list")) {
                 sender.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in all chat") + "\n" + TextUtils.border
+                        TextUtils.border + TextUtils.color("\n&6Chat Channels:\n&6All\n&6Party\n&6Guild\n") + TextUtils.border
                 );
-                chat.switchChannel(ChatChannels.ALL, (Player) sender);
                 return true;
             }
-            if (args[0].equalsIgnoreCase("p")) {
-                sender.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in party chat") + "\n" + TextUtils.border
-                );
-                chat.switchChannel(ChatChannels.PARTY, (Player) sender);
+            if (args[0].equalsIgnoreCase("a") || args[0].equalsIgnoreCase("all")) {
+                chat.joinChannel((Player) sender, ChatChannels.ALL);
                 return true;
             }
-            if (args[0].equalsIgnoreCase("s")) {
-                sender.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in staff chat") + "\n" + TextUtils.border
-                );
-                chat.switchChannel(ChatChannels.STAFF, (Player) sender);
+            if (args[0].equalsIgnoreCase("p") || args[0].equalsIgnoreCase("party")) {
+                //TODO: Handle party chat
                 return true;
+            }
+            if (args[0].equalsIgnoreCase("g") || args[0].equalsIgnoreCase("guild")) {
+                chat.joinChannel((Player) sender, ChatChannels.GUILD);
             }
             if (args[0].equalsIgnoreCase("admin")) {
-                sender.sendMessage(
-                        TextUtils.border + "\n" + TextUtils.color("&aYou are now in admin chat") + "\n" + TextUtils.border
-                );
-                chat.switchChannel(ChatChannels.ADMIN, (Player) sender);
+                if (RankManager.hasRank((Player) sender, PlayerRank.ADMIN)) {
+                    chat.joinChannel((Player) sender, ChatChannels.ADMIN);
+                    return true;
+                }
+                sender.sendMessage(TextBuilder.build("&cYou do not have permission to use this command!"));
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("s") || args[0].equalsIgnoreCase("staff")) {
+                if (RankManager.hasRank((Player) sender, PlayerRank.MODERATOR)) {
+                    chat.joinChannel((Player) sender, ChatChannels.STAFF);
+                    return true;
+                }
+                if (RankManager.hasRank((Player) sender, PlayerRank.ADMIN)) {
+                    chat.joinChannel((Player) sender, ChatChannels.STAFF);
+                    return true;
+                }
+                sender.sendMessage(TextBuilder.build("&cYou do not have permission to use this command!"));
                 return true;
             }
         }
